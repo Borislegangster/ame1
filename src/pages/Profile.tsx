@@ -1,4 +1,3 @@
-```typescript
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { SEO } from '../components/SEO';
@@ -250,4 +249,3 @@ export function Profile() {
     </div>
   );
 }
-```
