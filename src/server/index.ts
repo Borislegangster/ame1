@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { PrismaClient } from '@prisma/client';
 import authRoutes from './routes/auth';
+import postRoutes from './routes/posts';
 import { errorHandler } from './middleware/errorHandler';
 
 const prisma = new PrismaClient();
@@ -18,6 +19,7 @@ app.use(cookieParser());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/posts', postRoutes);
 
 // Error Handler
 app.use(errorHandler);

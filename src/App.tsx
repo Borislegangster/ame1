@@ -25,6 +25,8 @@ import { Register } from './pages/auth/Register';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { PasswordReset } from './pages/auth/PasswordReset';
 import { Dashboard } from './pages/admin/Dashboard';
+import { BlogList } from './pages/admin/blog/BlogList';
+import { BlogForm } from './pages/admin/blog/BlogForm';
 
 export function App() {
   return (
@@ -48,6 +50,30 @@ export function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/admin/blog"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'editor']}>
+                  <BlogList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/blog/new"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'editor']}>
+                  <BlogForm />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/blog/edit/:id"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'editor']}>
+                  <BlogForm />
+                </ProtectedRoute>
+              }
+            />
             
             {/* Public Routes */}
             <Route
@@ -57,7 +83,7 @@ export function App() {
                   <Header />
                   <main>
                     <Routes>
-                      <Route path="/\" element={<Home />} />
+                      <Route path="/" element={<Home />} />
                       <Route path="/about" element={<About />} />
                       <Route path="/services" element={<Services />} />
                       <Route path="/services/:id" element={<ServiceDetail />} />
