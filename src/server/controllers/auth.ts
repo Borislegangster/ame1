@@ -5,6 +5,13 @@ import { prisma } from '../index';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/email';
 import { generateToken } from '../utils/token';
 
+interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    role: string;
+  };
+}
+
 export const register = async (req: Request, res: Response) => {
   try {
     const { email, password, name, phone } = req.body;
@@ -109,6 +116,47 @@ export const login = async (req: Request, res: Response) => {
     });
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la connexion' });
+  }
+};
+
+export const logout = async (req: AuthRequest, res: Response) => {
+  try {
+    const token = req.cookies.token;
+    
+    if (req.user) {
+      await prisma.session.deleteMany({
+        where: {
+          userId: req.user.id,
+          token
+        }
+      });
+    }
+
+    res.clearCookie('token');
+    res.json({ message: 'Déconnexion réussie' });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la déconnexion' });
+  }
+};
+
+export const checkAuth = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Non authentifié' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { id: true, email: true, name: true, role: true }
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Non authentifié' });
+    }
+
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la vérification de l\'authentification' });
   }
 };
 

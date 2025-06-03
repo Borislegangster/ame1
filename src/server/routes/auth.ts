@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { register, login, forgotPassword, resetPassword, verifyEmail } from '../controllers/auth';
+import { register, login, forgotPassword, resetPassword, verifyEmail, logout, checkAuth } from '../controllers/auth';
 import { validateRequest } from '../middleware/validateRequest';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
@@ -26,6 +27,10 @@ router.post(
   validateRequest,
   login
 );
+
+router.post('/logout', authenticate, logout);
+
+router.get('/check', authenticate, checkAuth);
 
 router.post(
   '/forgot-password',
