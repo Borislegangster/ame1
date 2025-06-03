@@ -9,8 +9,8 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "preview": "vite preview",
     "server": "npx tsx src/server/index.ts",
-    "prisma:generate": "PRISMA_FORCE_NAPI=true prisma generate",
-    "prisma:push": "PRISMA_FORCE_NAPI=true prisma db push",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
     "prisma:generate:db:push": "npm run prisma:generate && npm run prisma:push"
   },
   "dependencies": {
