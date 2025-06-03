@@ -27,6 +27,7 @@ import { PasswordReset } from './pages/auth/PasswordReset';
 import { Dashboard } from './pages/admin/Dashboard';
 import { BlogList } from './pages/admin/blog/BlogList';
 import { BlogForm } from './pages/admin/blog/BlogForm';
+import { Profile } from './pages/Profile';
 
 export function App() {
   return (
@@ -101,6 +102,7 @@ export function App() {
                       <Route path="/register" element={<Register />} />
                       <Route path="/forgot-password" element={<ForgotPassword />} />
                       <Route path="/reset-password" element={<PasswordReset />} />
+                      <Route path="/profile" element={<Profile />} />
                     </Routes>
                   </main>
                   <Footer />

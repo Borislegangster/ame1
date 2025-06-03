@@ -237,3 +237,72 @@ export const verifyEmail = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Erreur lors de la vérification de l\'email' });
   }
 };
+
+export const updateProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const { name, email, phone } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Non authentifié' });
+    }
+
+    // Vérifier si l'email est déjà utilisé par un autre utilisateur
+    if (email !== req.user?.email) {
+      const existingUser = await prisma.user.findUnique({ where: { email } });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Cet email est déjà utilisé' });
+      }
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { name, email, phone }
+    });
+
+    res.json({
+      message: 'Profil mis à jour avec succès',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la mise à jour du profil' });
+  }
+};
+
+export const changePassword = async (req: AuthRequest, res: Response) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Non authentifié' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    const validPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!validPassword) {
+      return res.status(400).json({ message: 'Mot de passe actuel incorrect' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword }
+    });
+
+    res.json({ message: 'Mot de passe modifié avec succès' });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors du changement de mot de passe' });
+  }
+};
