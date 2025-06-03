@@ -1,4 +1,3 @@
-```typescript
 import React, { useState, useEffect } from 'react';
 import { AdminLayout } from '../../../components/admin/AdminLayout';
 import { UserPlus, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
@@ -204,4 +203,3 @@ export function UserList() {
     </AdminLayout>
   );
 }
-```
