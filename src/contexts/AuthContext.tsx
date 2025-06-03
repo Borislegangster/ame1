@@ -1,35 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
 
 interface User {
   id: string;
-  email: string;
   name: string;
-  role: string;
+  email: string;
+  role: 'admin' | 'editor' | 'user';
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  register: (data: RegisterData) => Promise<void>;
-  login: (data: LoginData) => Promise<void>;
+  error: string | null;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  forgotPassword: (email: string) => Promise<void>;
-  resetPassword: (token: string, password: string) => Promise<void>;
-}
-
-interface RegisterData {
-  email: string;
-  password: string;
-  name: string;
-  phone?: string;
-}
-
-interface LoginData {
-  email: string;
-  password: string;
-  rememberMe: boolean;
+  register: (name: string, email: string, password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,6 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,144 +31,121 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/me', {
+      const response = await fetch('/api/auth/check', {
         credentials: 'include'
       });
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
+
+      if (!response.ok) {
+        throw new Error('Authentication check failed');
       }
-    } catch (error) {
-      console.error('Erreur de vérification d\'authentification:', error);
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Invalid response format');
+      }
+
+      const data = await response.json();
+      setUser(data.user);
+    } catch (err) {
+      console.error('Auth check error:', err);
+      setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (data: RegisterData) => {
+  const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(data)
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message);
-      }
-
-      setUser(result.user);
-      toast.success('Inscription réussie');
-      navigate('/');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Erreur lors de l\'inscription');
-      throw error;
-    }
-  };
-
-  const login = async (data: LoginData) => {
-    try {
+      setError(null);
       const response = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(data)
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        throw new Error(result.message);
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
       }
 
-      setUser(result.user);
-      toast.success('Connexion réussie');
+      const data = await response.json();
+      setUser(data.user);
       navigate('/');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Erreur lors de la connexion');
-      throw error;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during login');
+      throw err;
     }
   };
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
+      setError(null);
+      const response = await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include'
       });
+
+      if (!response.ok) {
+        throw new Error('Logout failed');
+      }
+
       setUser(null);
-      toast.success('Déconnexion réussie');
       navigate('/login');
-    } catch (error) {
-      toast.error('Erreur lors de la déconnexion');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during logout');
+      throw err;
     }
   };
 
-  const forgotPassword = async (email: string) => {
+  const register = async (name: string, email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/forgot-password', {
+      setError(null);
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+        credentials: 'include'
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        throw new Error(result.message);
+        const error = await response.json();
+        throw new Error(error.message || 'Registration failed');
       }
 
-      toast.success('Email de réinitialisation envoyé');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Erreur lors de l\'envoi de l\'email');
-      throw error;
+      const data = await response.json();
+      setUser(data.user);
+      navigate('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during registration');
+      throw err;
     }
   };
 
-  const resetPassword = async (token: string, password: string) => {
-    try {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password })
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message);
-      }
-
-      toast.success('Mot de passe réinitialisé avec succès');
-      navigate('/login');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Erreur lors de la réinitialisation');
-      throw error;
-    }
+  const value = {
+    user,
+    loading,
+    error,
+    login,
+    logout,
+    register
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      loading,
-      register,
-      login,
-      logout,
-      forgotPassword,
-      resetPassword
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth doit être utilisé à l\'intérieur d\'un AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}
