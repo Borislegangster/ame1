@@ -1,4 +1,3 @@
-```tsx
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -54,7 +53,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <Link
                 key={item.path}
                 to={item.path}
-                className={\`flex items-center px-6 py-3 text-sm ${
+                className={`flex items-center px-6 py-3 text-sm ${
                   isActive(item.path)
                     ? 'bg-[#3498db] text-white'
                     : 'text-gray-300 hover:bg-gray-800'
@@ -82,4 +81,3 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     </div>
   );
 }
-```
