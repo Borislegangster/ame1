@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "preview": "vite preview",
-    "server": "ts-node --esm src/server/index.ts"
+    "server": "node --loader ts-node/esm src/server/index.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
