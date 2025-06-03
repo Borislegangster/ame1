@@ -1,5 +1,11 @@
 ## Getting Started
 
+### Prerequisites
+
+This project requires OpenSSL to be installed for database operations. Since we're running in a browser-based environment, we'll use SQLite instead of PostgreSQL, which doesn't require OpenSSL.
+
+### Setup Steps
+
 1. Run `npm install`
 2. Run `npm run server` to start the backend API server
 3. In a new terminal, run `npm run dev` to start the frontend development server
